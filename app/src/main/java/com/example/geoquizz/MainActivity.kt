@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.activity.ComponentActivity
 import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,7 +19,35 @@ import com.example.geoquizz.ui.theme.GeoQuizzTheme
 class MainActivity : ComponentActivity() {
     private lateinit var mTrueButton: Button
     private lateinit var mFalseButton: Button
+    private lateinit var mNextButton: Button
+    private lateinit var mQuestionTextView: TextView
+    private val mQuestionBank = arrayOf(
+        Question(R.string.question_oceans, true),
+        Question(R.string.question_mideast, false),
+        Question(R.string.question_africa, false),
+        Question(R.string.question_americas, true),
+        Question(R.string.question_asia, true)
+    )
+    private var mCurrentIndex = 0
 
+    private fun updateQuestion() {
+        val question = mQuestionBank[mCurrentIndex].getTextResId()
+        mQuestionTextView.setText(question)
+    }
+
+    private fun checkAnswer(user_answer: Boolean) {
+        val correct_answer = mQuestionBank[mCurrentIndex].getAnswerTrue()
+
+        var messageResId: Int
+
+        if (user_answer == correct_answer) {
+            messageResId = R.string.correct_toast
+        } else {
+            messageResId = R.string.incorrect_toast
+        }
+
+        Toast.makeText(this@MainActivity, messageResId, Toast.LENGTH_SHORT).show()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,12 +55,23 @@ class MainActivity : ComponentActivity() {
 
         mTrueButton = findViewById(R.id.true_button)
         mTrueButton.setOnClickListener {
-            Toast.makeText(this@MainActivity, R.string.correct_toast, Toast.LENGTH_SHORT).show()
+            checkAnswer(true)
         }
+
         mFalseButton = findViewById(R.id.false_button)
         mFalseButton.setOnClickListener {
-            Toast.makeText(this@MainActivity, R.string.incorrect_toast, Toast.LENGTH_SHORT).show()
+            checkAnswer(false)
         }
+
+        mQuestionTextView = findViewById(R.id.question_text_view)
+
+        mNextButton = findViewById(R.id.next_button)
+        mNextButton.setOnClickListener {
+            mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.size
+            updateQuestion()
+        }
+
+        updateQuestion()
     }
 
 }
