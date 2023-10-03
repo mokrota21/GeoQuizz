@@ -17,6 +17,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.example.geoquizz.ui.theme.GeoQuizzTheme
 
 class MainActivity : ComponentActivity() {
+    private val KEY_INDEX = "index"
+
     private lateinit var mTrueButton: Button
     private lateinit var mFalseButton: Button
     private lateinit var mNextButton: Button
@@ -71,7 +73,17 @@ class MainActivity : ComponentActivity() {
             updateQuestion()
         }
 
+        if (savedInstanceState != null) {
+            mCurrentIndex = savedInstanceState.getInt(KEY_INDEX, 0)
+        }
+
         updateQuestion()
+
+    }
+
+    override fun onSaveInstanceState(savedInstanceState: Bundle) {
+        super.onSaveInstanceState(savedInstanceState)
+        savedInstanceState.putInt(KEY_INDEX, mCurrentIndex)
     }
 
 }
