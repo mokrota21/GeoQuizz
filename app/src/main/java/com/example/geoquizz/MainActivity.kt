@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.activity.ComponentActivity
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.compose.setContent
@@ -19,7 +20,10 @@ import com.example.geoquizz.ui.theme.GeoQuizzTheme
 class MainActivity : ComponentActivity() {
     private lateinit var mTrueButton: Button
     private lateinit var mFalseButton: Button
-    private lateinit var mNextButton: Button
+//    private lateinit var mNextButton: Button
+//    private lateinit var mPreviousButton: Button
+    private lateinit var mNextImageButton: ImageButton
+    private lateinit var mPreviousImageButton: ImageButton
     private lateinit var mQuestionTextView: TextView
     private val mQuestionBank = arrayOf(
         Question(R.string.question_oceans, true),
@@ -28,7 +32,7 @@ class MainActivity : ComponentActivity() {
         Question(R.string.question_americas, true),
         Question(R.string.question_asia, true)
     )
-    private var mCurrentIndex = 0
+    private var mCurrentIndex: Int = 0
 
     private fun updateQuestion() {
         val question = mQuestionBank[mCurrentIndex].getTextResId()
@@ -65,11 +69,40 @@ class MainActivity : ComponentActivity() {
 
         mQuestionTextView = findViewById(R.id.question_text_view)
 
-        mNextButton = findViewById(R.id.next_button)
-        mNextButton.setOnClickListener {
+        mQuestionTextView.setOnClickListener {
             mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.size
             updateQuestion()
         }
+
+        mNextImageButton = findViewById(R.id.next_image_button)
+        mNextImageButton.setOnClickListener {
+            mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.size
+            updateQuestion()
+        }
+
+        mPreviousImageButton = findViewById(R.id.previous_image_button)
+        mPreviousImageButton.setOnClickListener {
+            mCurrentIndex = (mCurrentIndex - 1) % mQuestionBank.size
+            if (mCurrentIndex < 0) {
+                mCurrentIndex = mQuestionBank.size + mCurrentIndex
+            }
+            updateQuestion()
+        }
+
+//        mNextButton = findViewById(R.id.next_button)
+//        mNextButton.setOnClickListener {
+//            mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.size
+//            updateQuestion()
+//        }
+//
+//        mPreviousButton = findViewById(R.id.previous_button)
+//        mPreviousButton.setOnClickListener {
+//            mCurrentIndex = (mCurrentIndex - 1) % mQuestionBank.size
+//            if (mCurrentIndex < 0) {
+//                mCurrentIndex = mQuestionBank.size + mCurrentIndex
+//            }
+//            updateQuestion()
+//        }
 
         updateQuestion()
     }
