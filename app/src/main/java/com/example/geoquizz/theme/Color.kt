@@ -1,4 +1,4 @@
-package com.example.geoquizz.ui.theme
+package com.example.geoquizz.theme
 
 import androidx.compose.ui.graphics.Color
 

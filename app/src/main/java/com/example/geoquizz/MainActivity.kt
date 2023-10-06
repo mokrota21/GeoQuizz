@@ -1,28 +1,24 @@
 package com.example.geoquizz
 
+import android.content.Intent
 import android.os.Bundle
-import android.view.View
 import androidx.activity.ComponentActivity
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.geoquizz.ui.theme.GeoQuizzTheme
+import com.example.geoquizz.theme.CheatActivity
+
 
 class MainActivity : ComponentActivity() {
     private val KEY_INDEX = "index"
+    private val TAG = "SudoMainActivity"
 
     private lateinit var mTrueButton: Button
     private lateinit var mFalseButton: Button
+    private lateinit var mCheatButton: Button
     private lateinit var mNextButton: Button
     private lateinit var mQuestionTextView: TextView
+    private var REQUEST_CODE_CHEAT: int = 0
     private val mQuestionBank = arrayOf(
         Question(R.string.question_oceans, true),
         Question(R.string.question_mideast, false),
@@ -72,6 +68,16 @@ class MainActivity : ComponentActivity() {
             mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.size
             updateQuestion()
         }
+
+        mCheatButton = findViewById(R.id.cheat_button)
+        mCheatButton.setOnClickListener {
+            val answerIsTrue = mQuestionBank[mCurrentIndex].getAnswerTrue()
+            val i: Intent = CheatActivity.newIntent(this@MainActivity, answerIsTrue)
+//            val i: Intent = Intent(this@MainActivity, CheatActivity::class.java)
+//            i.putExtra("EXTRA_ANSWER_IS_TRUE", mQuestionBank[mCurrentIndex].getAnswerTrue())
+            startActivityForResult(i, REQUEST_CODE_CHEAT)
+        }
+
 
         if (savedInstanceState != null) {
             mCurrentIndex = savedInstanceState.getInt(KEY_INDEX, 0)
