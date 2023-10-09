@@ -3,6 +3,8 @@ package com.example.geoquizz.theme
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.PersistableBundle
+import android.util.Log
 import android.widget.Button
 import android.widget.TextView
 import androidx.activity.ComponentActivity
@@ -12,6 +14,8 @@ class CheatActivity : ComponentActivity() {
     private lateinit var mShowAnswer: Button
     private var mAnswerIsTrue: Boolean = false
     private lateinit var mAnswerTextView: TextView
+    private val TAG = "SudoCheatActivity"
+    private var mDidCheat: Boolean = false
 
     companion object {
 
@@ -38,7 +42,30 @@ class CheatActivity : ComponentActivity() {
             } else {
                 mAnswerTextView.setText(R.string.false_button)
             }
+
+            mDidCheat = true
+
+            setAnswerShown(mDidCheat)
         }
+
+        if (savedInstanceState != null) {
+            mDidCheat = savedInstanceState.getBoolean("DID_CHEAT", false)
+        }
+
+        setAnswerShown(mDidCheat)
+    }
+
+    private fun setAnswerShown(isAnswerShown: Boolean) {
+        val data: Intent = Intent()
+        Log.d(TAG, "extra modified, result = $isAnswerShown")
+        data.putExtra("EXTRA_ANSWER_SHOWN", isAnswerShown)
+        setResult(RESULT_OK, data)
+    }
+
+    override fun onSaveInstanceState(savedInstanceState: Bundle) {
+        super.onSaveInstanceState(savedInstanceState)
+
+        savedInstanceState.putBoolean("DID_CHEAT", mDidCheat)
     }
 
 
