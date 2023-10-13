@@ -1,4 +1,4 @@
-package com.example.geoquizz.ui.theme
+package com.example.geoquizz.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

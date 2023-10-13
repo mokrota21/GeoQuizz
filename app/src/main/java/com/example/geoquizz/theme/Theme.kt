@@ -1,4 +1,4 @@
-package com.example.geoquizz.ui.theme
+package com.example.geoquizz.theme
 
 import android.app.Activity
 import android.os.Build

@@ -1,29 +1,29 @@
 package com.example.geoquizz
 
+import android.content.Intent
 import android.os.Bundle
-import android.view.View
+import android.util.Log
 import androidx.activity.ComponentActivity
 import android.widget.Button
-import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.geoquizz.ui.theme.GeoQuizzTheme
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.ActivityResultCallback
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import com.example.geoquizz.theme.CheatActivity
+
 
 class MainActivity : ComponentActivity() {
+    private val KEY_INDEX = "index"
+    private val TAG = "SudoMainActivity"
+
+    private lateinit var mCheatActivityResultLauncher: ActivityResultLauncher<Intent>
+
     private lateinit var mTrueButton: Button
     private lateinit var mFalseButton: Button
-//    private lateinit var mNextButton: Button
-//    private lateinit var mPreviousButton: Button
-    private lateinit var mNextImageButton: ImageButton
-    private lateinit var mPreviousImageButton: ImageButton
+    private lateinit var mCheatButton: Button
+    private lateinit var mNextButton: Button
     private lateinit var mQuestionTextView: TextView
     private val mQuestionBank = arrayOf(
         Question(R.string.question_oceans, true),
@@ -32,22 +32,23 @@ class MainActivity : ComponentActivity() {
         Question(R.string.question_americas, true),
         Question(R.string.question_asia, true)
     )
-    private var mCurrentIndex: Int = 0
+    private var mIsCheating: BooleanArray = BooleanArray(mQuestionBank.size) { false }
+    private var mCurrentIndex = 0
 
     private fun updateQuestion() {
         val question = mQuestionBank[mCurrentIndex].getTextResId()
         mQuestionTextView.setText(question)
     }
 
-    private fun checkAnswer(user_answer: Boolean) {
-        val correct_answer = mQuestionBank[mCurrentIndex].getAnswerTrue()
+    private fun checkAnswer(userAnswer: Boolean) {
+        val correctAnswer = mQuestionBank[mCurrentIndex].getAnswerTrue()
 
-        var messageResId: Int
-
-        if (user_answer == correct_answer) {
-            messageResId = R.string.correct_toast
+        val messageResId: Int = if (mIsCheating[mCurrentIndex]) {
+            R.string.judgment_toast
+        } else if (userAnswer == correctAnswer) {
+            R.string.correct_toast
         } else {
-            messageResId = R.string.incorrect_toast
+            R.string.incorrect_toast
         }
 
         Toast.makeText(this@MainActivity, messageResId, Toast.LENGTH_SHORT).show()
@@ -69,42 +70,50 @@ class MainActivity : ComponentActivity() {
 
         mQuestionTextView = findViewById(R.id.question_text_view)
 
-        mQuestionTextView.setOnClickListener {
+        mNextButton = findViewById(R.id.next_button)
+        mNextButton.setOnClickListener {
             mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.size
             updateQuestion()
         }
 
-        mNextImageButton = findViewById(R.id.next_image_button)
-        mNextImageButton.setOnClickListener {
-            mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.size
-            updateQuestion()
-        }
+        mCheatActivityResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                // Handle the result here
+                Log.d(TAG, "calculating result")
+                val data = result.data
+                val resultValue: Boolean? = data?.getBooleanExtra("EXTRA_ANSWER_SHOWN", false)
 
-        mPreviousImageButton = findViewById(R.id.previous_image_button)
-        mPreviousImageButton.setOnClickListener {
-            mCurrentIndex = (mCurrentIndex - 1) % mQuestionBank.size
-            if (mCurrentIndex < 0) {
-                mCurrentIndex = mQuestionBank.size + mCurrentIndex
+                if (resultValue == true) {
+                    mIsCheating[mCurrentIndex] = true
+                }
+
+                Log.d(TAG, "mIsCheating[$mCurrentIndex] = ${mIsCheating[mCurrentIndex]}, resultValue = $resultValue")
             }
-            updateQuestion()
         }
 
-//        mNextButton = findViewById(R.id.next_button)
-//        mNextButton.setOnClickListener {
-//            mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.size
-//            updateQuestion()
-//        }
-//
-//        mPreviousButton = findViewById(R.id.previous_button)
-//        mPreviousButton.setOnClickListener {
-//            mCurrentIndex = (mCurrentIndex - 1) % mQuestionBank.size
-//            if (mCurrentIndex < 0) {
-//                mCurrentIndex = mQuestionBank.size + mCurrentIndex
-//            }
-//            updateQuestion()
-//        }
+        mCheatButton = findViewById(R.id.cheat_button)
+        mCheatButton.setOnClickListener {
+            val answerIsTrue = mQuestionBank[mCurrentIndex].getAnswerTrue()
+            val i: Intent = CheatActivity.newIntent(this@MainActivity, answerIsTrue)
+//            val i: Intent = Intent(this@MainActivity, CheatActivity::class.java)
+//            i.putExtra("EXTRA_ANSWER_IS_TRUE", mQuestionBank[mCurrentIndex].getAnswerTrue())
+            mCheatActivityResultLauncher.launch(i)
+        }
+
+
+        if (savedInstanceState != null) {
+            mCurrentIndex = savedInstanceState.getInt(KEY_INDEX, 0)
+            mIsCheating = savedInstanceState.getBooleanArray("IS_CHEATING")!!
+        }
 
         updateQuestion()
+
+    }
+
+    override fun onSaveInstanceState(savedInstanceState: Bundle) {
+        super.onSaveInstanceState(savedInstanceState)
+        savedInstanceState.putInt(KEY_INDEX, mCurrentIndex)
+        savedInstanceState.putBooleanArray("IS_CHEATING", mIsCheating)
     }
 
 }
